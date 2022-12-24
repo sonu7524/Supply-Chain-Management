@@ -21,13 +21,41 @@ public class SupplyChain extends Application {
 
     public static final int width = 700, height = 600, headerBar = 50;
 
-    Pane bodyPane = new Pane();
+    public static Pane bodyPane = new Pane();
+
+    public static int bodyWidth, bodyHeight;
+
     Login login = new Login();
     Label messageLabel = new Label();
     ProductDetails productDetails = new ProductDetails();
+    Button globalLoginButton;
+    Label customerNameLabel = null;
+    String customerName = null;
     private GridPane headerBar(){
         TextField searchText = new TextField();
         Button searchButton = new Button("Search");
+        searchButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                String productName = searchText.getText();
+                productDetails.getProductsByName(productName);
+                bodyPane.getChildren().clear();
+                bodyPane.getChildren().add(productDetails.getProductsByName(productName));
+            }
+        });
+
+        globalLoginButton = new Button("Login");
+        globalLoginButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                bodyPane.getChildren().clear();
+                bodyPane.getChildren().add(loginPage());
+                globalLoginButton.setDisable(true);
+
+            }
+        });
+
+        customerNameLabel = new Label();
 
         GridPane gridPane = new GridPane();
         gridPane.setMinSize(bodyPane.getMinWidth(),headerBar);
@@ -37,8 +65,10 @@ public class SupplyChain extends Application {
         gridPane.setAlignment(Pos.CENTER);
         gridPane.setStyle("-fx-background-color: #87CEEB");
 
-        gridPane.add(searchText, 0, 0);
-        gridPane.add(searchButton, 1, 0);
+        gridPane.add(searchText, 2, 0);
+        gridPane.add(searchButton, 3, 0);
+        gridPane.add(globalLoginButton, 0, 0);
+        gridPane.add(customerNameLabel, 0, 0);
 
         return gridPane;
     }
@@ -61,9 +91,14 @@ public class SupplyChain extends Application {
             public void handle(ActionEvent actionEvent) {
                 String email = emailTextField.getText();
                 String password = passwordField.getText();
+                String name = "";
                 if(login.customerLogin(email, password)){
                     messageLabel.setText("Login Successful");
-
+                    customerName = name;
+                    globalLoginButton.setDisable(true);
+                    customerNameLabel.setText("Welcome : "+ customerName);
+                    bodyPane.getChildren().clear();
+                    bodyPane.getChildren().add(productDetails.getAllProducts());
                 }
                 else messageLabel.setText("Something went wrong, Unable to Login");
             }
@@ -92,7 +127,7 @@ public class SupplyChain extends Application {
         root.setPrefSize(width, height+headerBar);
         bodyPane.setMinSize(width,height);
         bodyPane.setTranslateY(headerBar);
-        bodyPane.getChildren().addAll(productDetails.getAllProducts());
+        bodyPane.getChildren().add(loginPage());
         root.getChildren().addAll(headerBar(),bodyPane);
 
         return root;
